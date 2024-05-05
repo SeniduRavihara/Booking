@@ -12,7 +12,7 @@ Payhere.init("1226628", AccountCategory.SANDBOX);
 // Live
 // Payhere.init("12xxxxx", AccountCategory.LIVE);
 
-function onPayhereCheckoutError(errorMsg) {
+function onPayhereCheckoutError(errorMsg: any) {
   alert(errorMsg);
 }
 
