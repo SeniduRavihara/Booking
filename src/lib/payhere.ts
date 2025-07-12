@@ -1,49 +1,78 @@
-import {
-  Customer,
-  CurrencyType,
-  PayhereCheckout,
-  CheckoutParams,
-} from "@payhere-js-sdk/client";
-import { Payhere, AccountCategory } from "@payhere-js-sdk/client";
+declare let payhere: any;
 
-// Sandbox
-Payhere.init("1226628", AccountCategory.SANDBOX);
+export async function paymentGateWay() {
+  console.log("Payment Gateway");
 
-// Live
-// Payhere.init("12xxxxx", AccountCategory.LIVE);
+  try {
+    const response = await fetch(
+      " https://us-central1-bookinglk-e6a4e.cloudfunctions.net/generatePayHereHash",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          merchant_id: "1226628",
+          order_id: "123456",
+          amount: "1000.00",
+          currency: "LKR",
+        }), // Pass any data needed for generating the hash
+      }
+    );
 
-function onPayhereCheckoutError(errorMsg: any) {
-  alert(errorMsg);
-}
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
 
-export function checkout() {
-  const customer = new Customer({
-    first_name: "Demo",
-    last_name: "User",
-    phone: "+94771234567",
-    email: "user@example.com",
-    address: "No. 50, Highlevel Road",
-    city: "Panadura",
-    country: "Sri Lanka",
-  });
+    const obj = await response.json();
+    alert(JSON.stringify(obj));
 
-  const checkoutData = new CheckoutParams({
-    returnUrl: "http://localhost:3000/return",
-    cancelUrl: "http://localhost:3000/cancel",
-    notifyUrl: "http://localhost:8080/notify",
-    order_id: "112233",
-    itemTitle: "Demo Item",
-    currency: CurrencyType.LKR,
-    amount: 100,
-    platform: "web",
-    custom1: "",
-    custom2: "",
-  });
+    // Payment completed. It can be a successful failure.
+    payhere.onCompleted = function onCompleted(orderId: string) {
+      console.log("Payment completed. OrderID:" + orderId);
+      // Note: validate the payment and show success or failure page to the customer
+    };
 
-  const checkout = new PayhereCheckout(
-    customer,
-    checkoutData,
-    onPayhereCheckoutError
-  );
-  checkout.start();
+    // Payment window closed
+    payhere.onDismissed = function onDismissed() {
+      // Note: Prompt user to pay again or show an error page
+      console.log("Payment dismissed");
+    };
+
+    // Error occurred
+    payhere.onError = function onError(error:  ) {
+      // Note: show an error page
+      console.log("Error:" + error);
+    };
+
+    // Put the payment variables here
+    const payment = {
+      sandbox: true,
+      merchant_id: "1226628", // Replace your Merchant ID
+      return_url: "http://localhost/payHereTest/", // Important
+      cancel_url: "http://localhost/payHereTest/", // Important
+      notify_url: "http://sample.com/notify",
+      order_id: "123456",
+      items: "Door bell wireles",
+      amount: "1000.00",
+      currency: "LKR",
+      hash: obj.hash, // *Replace with generated hash retrieved from backend
+      first_name: "Saman",
+      last_name: "Perera",
+      email: "samanp@gmail.com",
+      phone: "0771234567",
+      address: "No.1, Galle Road",
+      city: "Colombo",
+      country: "Sri Lanka",
+      delivery_address: "No. 46, Galle road, Kalutara South",
+      delivery_city: "Kalutara",
+      delivery_country: "Sri Lanka",
+      custom_1: "",
+      custom_2: "",
+    };
+
+    payhere.startPayment(payment);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
 }

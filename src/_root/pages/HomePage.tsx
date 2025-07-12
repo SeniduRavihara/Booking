@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { logout } from "@/firebase/api";
-import { checkout } from "@/lib/payhere";
+import { paymentGateWay } from "@/lib/payhere";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -16,12 +16,16 @@ const HomePage = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <div>HomePage</div>
 
-      <Button onClick={checkout}>pay</Button>
+      <Button className="bg-blue-600" onClick={paymentGateWay}>
+        payHere
+      </Button>
 
-      <Button onClick={logoutUser}>Logout</Button>
+      <Button className="mt-20" onClick={logoutUser}>
+        Logout
+      </Button>
     </div>
   );
 };
